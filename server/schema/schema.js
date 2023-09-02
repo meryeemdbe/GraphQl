@@ -2,21 +2,8 @@ const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList } = graphql;
 const _ = require('lodash');
 
-// dummy data
-var books = [
-    { name: 'Name of the Wind', genre: 'Fantasy', id: '1', authorId:'1' },
-    { name: 'The Final Empire', genre: 'Fantasy', id: '2', authorId:'2' },
-    { name: 'The Long Earth', genre: 'Sci-Fi', id: '3', authorId:'3' },
-    { name: 'The Long Earth', genre: 'Sci-Fi', id: '3', authorId: '3' },
-    { name: 'The Colour of Magic', genre: 'Fantasy', id: '5', authorId: '3' },
-    { name: 'The Light Fantastic', genre: 'Fantasy', id: '6', authorId: '3' },
-];
-
-var authors = [
-    { name: 'Patrick Rothfuss', age: 44, id: '1' },
-    { name: 'Brandon Sanderson', age: 42, id: '2' },
-    { name: 'Terry Pratchett', age: 66, id: '3' }
-];
+const Book = require('../models/book');
+const Author = require('../models/author');
 
 // 1 - create our object types : books & authors
  const BookType = new GraphQLObjectType({
@@ -28,7 +15,7 @@ var authors = [
         author: {
             type : Authortype,
             resolve(parent, args) {
-                return _.find(authors, {id: parent.authorId} )
+                // return _.find(authors, {id: parent.authorId} )
             }
         }
 
@@ -45,11 +32,47 @@ var authors = [
         books: {
             type: new GraphQLList(BookType),
             resolve(parent,args) {
-                return _.filter(books, {authorId :parent.id })
+                // return _.filter(books, {authorId :parent.id })
             }
         }
 
     })
+
+ });
+
+ const Mutation = new GraphQLObjectType({
+    name:'Mutation',
+    fields:{
+        addAuthor: {
+            type: Authortype,
+            args: {
+                name: {type: GraphQLString},
+                age: {type: GraphQLInt},
+            },
+            resolve(parent, args) {
+                let author = new Author({
+                    name: args.name,
+                    age: args.age,
+                })
+               return author.save();
+            }
+        },
+        addBook: {
+            type: BookType,
+            args: {
+                name: {type: GraphQLString},
+                genre: {type: GraphQLString},
+                authorId: {type: GraphQLID}
+            },
+            resolve(parent, args) {
+                let book = new Book({
+                    name: args.name,
+                    genre: args.genre,
+                })
+               return book.save();
+            }
+        }         
+    }
 
  });
 
@@ -63,26 +86,26 @@ const RootQuery = new GraphQLObjectType({
             args: {id: {type: GraphQLID}}, // book(id:123){name genre...}
             resolve(parent, args) {
                 // code to get data from db / other source
-                 return _.find(books, {id: args.id});
+                //  return _.find(books, {id: args.id});
             }
         },
         author: {
             type:Authortype,
             args: {id: {type: GraphQLID}}, 
             resolve(parent, args) {
-                 return _.find(authors, {id: args.id});
+                //  return _.find(authors, {id: args.id});
             }
         },
         books: {
             type: new GraphQLList(BookType),
              resolve(parent, args) {
-                 return books;
+                //  return books;
             }
         }, 
         authors: {
             type: new GraphQLList(Authortype),
              resolve(parent, args) {
-                 return authors;
+                //  return authors;
             }
         }, 
     }
@@ -90,7 +113,8 @@ const RootQuery = new GraphQLObjectType({
  });
 // export schema to use it in app.js
 module.exports = new GraphQLSchema({
-    query : RootQuery
+    query : RootQuery,
+    mutation: Mutation
 })
 
 // Wrapping fields inside functions aims to make those fields inside a function 
