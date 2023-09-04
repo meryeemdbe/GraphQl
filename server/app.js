@@ -2,9 +2,11 @@ const express = require('express');
 const { graphqlHTTP }  = require('express-graphql');
 const schema = require('./schema/schema')
 const app = express();
+
 const mongoose = require('mongoose');
 const uri = "mongodb+srv://meryem:meryem@gql-cluster.xzewhai.mongodb.net/gql?retryWrites=true&w=majority";
 
+const cors = require('cors');
 // -------- database connection --------
 
 // another way of connecting to database:
@@ -60,6 +62,9 @@ db.once('open',() => {
 //       res.status(500).json({ error: "MongoDB connection test failed" });
 //     }
 //   });
+
+// Allow cross-origin requests
+app.use(cors());
 
 app.use('/graphql',graphqlHTTP({
     schema,
